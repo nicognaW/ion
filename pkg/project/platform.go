@@ -42,9 +42,10 @@ func (p *Project) CopyPlatform(version string) error {
 }
 
 type PackageJson struct {
-	Version      string                 `json:"version"`
-	Dependencies map[string]string      `json:"dependencies"`
-	Other        map[string]interface{} `json:"-"`
+	Version         string                 `json:"version"`
+	Dependencies    map[string]string      `json:"dependencies"`
+	DevDependencies map[string]string      `json:"devDependencies"`
+	Other           map[string]interface{} `json:"-"`
 }
 
 func getPackageJson(proj *Project, pkg string) (*PackageJson, error) {
