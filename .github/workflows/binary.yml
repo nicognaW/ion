@@ -1,8 +1,7 @@
 name: binary
 
 on:
-  push:
-    workflow_dispatch:
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
