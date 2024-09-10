@@ -512,6 +512,10 @@ export class Nextjs extends Component implements Link.Linkable {
     const parent = this;
     const buildCommand = normalizeBuildCommand();
     const { sitePath, partition, region } = prepare(parent, args);
+    const isAWSCN = region.apply((region) => region.startsWith("cn-"));
+    if (isAWSCN) {
+      console.log("AWS China detected.");
+    }
     const dev = normalizeDev();
 
     if (dev) {
@@ -781,8 +785,12 @@ export class Nextjs extends Component implements Link.Linkable {
           { url: revalidationQueueUrl, arn: revalidationQueueArn },
           { name: revalidationTableName, arn: revalidationTableArn },
         ]) => {
+          const isAWSCN = region.startsWith("cn-");
+          if (isAWSCN) {
+            console.log("AWS China detected.");
+          }
           const defaultFunctionProps = {
-            runtime: "nodejs20.x" as const,
+            runtime: isAWSCN ? "nodejs18.x" as const : "nodejs20.x" as const,
             environment: {
               CACHE_BUCKET_NAME: bucketName,
               CACHE_BUCKET_KEY_PREFIX: "_cache",
@@ -885,6 +893,7 @@ export class Nextjs extends Component implements Link.Linkable {
                   ];
                 }
                 if (key === "imageOptimizer") {
+                  region
                   value = value as OpenNextImageOptimizationOrigin;
                   return [
                     key,
@@ -894,7 +903,7 @@ export class Nextjs extends Component implements Link.Linkable {
                           description: `${name} image optimizer`,
                           handler: value.handler,
                           bundle: path.join(outputPath, value.bundle),
-                          runtime: "nodejs20.x",
+                          runtime: isAWSCN ? "nodejs18.x" : "nodejs20.x",
                           architecture: "arm64",
                           environment: {
                             BUCKET_NAME: bucketName,
@@ -972,7 +981,7 @@ export class Nextjs extends Component implements Link.Linkable {
               description: `${name} ISR revalidator`,
               handler: revalidationFunction.handler,
               bundle: path.join(outputPath, revalidationFunction.bundle),
-              runtime: "nodejs20.x",
+              runtime: isAWSCN ? "nodejs18.x" : "nodejs20.x",
               timeout: "30 seconds",
               permissions: [
                 {
@@ -1067,7 +1076,7 @@ export class Nextjs extends Component implements Link.Linkable {
                 outputPath,
                 openNextOutput.additionalProps.initializationFunction.bundle,
               ),
-              runtime: "nodejs20.x",
+              runtime: isAWSCN ? "nodejs18.x" : "nodejs20.x",
               timeout: "900 seconds",
               memory: `${Math.min(
                 10240,
