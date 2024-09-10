@@ -3,8 +3,6 @@ name: binary
 on:
   push:
     workflow_dispatch:
-    tags:
-      - "*"
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
