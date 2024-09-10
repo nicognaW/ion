@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
-	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 )
 
 type OriginAccessControl struct {
@@ -20,26 +19,9 @@ type OriginAccessControlOutputs struct {
 }
 
 func (r *OriginAccessControl) Create(input *OriginAccessControlInputs, output *CreateResult[OriginAccessControlOutputs]) error {
-	cfg, err := r.config()
-	if err != nil {
-		return err
-	}
-	cf := cloudfront.NewFromConfig(cfg)
 	slog.Info("creating origin access control")
-	resp, err := cf.CreateOriginAccessControl(r.context, &cloudfront.CreateOriginAccessControlInput{
-		OriginAccessControlConfig: &types.OriginAccessControlConfig{
-			Name: 												 aws.String(input.Name),
-			Description:									 aws.String("Created by SST"),
-			OriginAccessControlOriginType: "s3",
-			SigningBehavior:							 "always",
-			SigningProtocol:							 "sigv4",
-		},
-	})
-	if err != nil {
-		return err
-	}
 	*output = CreateResult[OriginAccessControlOutputs]{
-		ID:   *resp.OriginAccessControl.Id,
+		ID:   *aws.String("unavailable"),
 		Outs: OriginAccessControlOutputs{},
 	}
 	return nil
