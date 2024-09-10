@@ -491,6 +491,17 @@ var steps = []bootstrapStep{
 		buckets := []string{data.Asset, data.State}
 		for _, bucket := range buckets {
 			slog.Info("enforcing SSL for bucket", "name", bucket)
+			resource := []string{
+				fmt.Sprintf("arn:aws:s3:::%s", bucket),
+				fmt.Sprintf("arn:aws:s3:::%s/*", bucket),
+			}
+			// if cfg.Region starts with "cn-", then the region is in China
+			if strings.HasPrefix(cfg.Region, "cn-") {
+				resource = []string{
+					fmt.Sprintf("arn:aws-cn:s3:::%s", bucket),
+					fmt.Sprintf("arn:aws-cn:s3:::%s/*", bucket),
+				}
+			}
 			policy := map[string]interface{}{
 				"Version": "2012-10-17",
 				"Statement": []map[string]interface{}{
@@ -499,10 +510,7 @@ var steps = []bootstrapStep{
 						"Effect":    "Deny",
 						"Principal": "*",
 						"Action":    "s3:*",
-						"Resource": []string{
-							fmt.Sprintf("arn:aws:s3:::%s", bucket),
-							fmt.Sprintf("arn:aws:s3:::%s/*", bucket),
-						},
+						"Resource":  resource,
 						"Condition": map[string]interface{}{
 							"Bool": map[string]interface{}{
 								"aws:SecureTransport": "false",
