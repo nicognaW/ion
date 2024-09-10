@@ -1066,7 +1066,11 @@ export class Function extends Component implements Link.Linkable {
     // Useful for future runtimes
     const containerDeployment = pythonContainerMode;
     const dev = normalizeDev();
-    const region = normalizeRegion();
+    const region: Output<string> = normalizeRegion();
+    const isAWSCN = region.apply((region) => region.startsWith("cn-"));
+    if (isAWSCN) {
+      console.log("AWS China detected.");
+    }
     const bootstrapData = region.apply((region) => bootstrap.forRegion(region));
     const injections = normalizeInjections();
     const runtime = normalizeRuntime();
@@ -1563,7 +1567,9 @@ export class Function extends Component implements Link.Linkable {
                         {
                           type: "AWS",
                           identifiers: [
-                            interpolate`arn:aws:iam::${
+                            isAWSCN ? interpolate`arn:aws-cn:iam::${
+                              getCallerIdentityOutput().accountId
+                            }:root` : interpolate`arn:aws:iam::${
                               getCallerIdentityOutput().accountId
                             }:root`,
                           ],
@@ -1579,13 +1585,13 @@ export class Function extends Component implements Link.Linkable {
             ),
             managedPolicyArns: logging.apply((logging) => [
               ...(logging
-                ? [
-                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                  ? [
+                    interpolate`arn:aws${isAWSCN ? "-cn" : ""}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole`,
                   ]
-                : []),
+                  : []),
               ...(args.vpc
-                ? [
-                    "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole",
+                  ? [
+                    interpolate`arn:aws${isAWSCN ? "-cn" : ""}:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole`,
                   ]
                 : []),
             ]),

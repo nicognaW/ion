@@ -91,6 +91,10 @@ export class Service extends Component implements Link.Linkable {
     const cluster = output(args.cluster);
     const vpc = normalizeVpc();
     const region = normalizeRegion();
+    const isAWSCN = region.apply((region) => region.startsWith("cn-"));
+    if (isAWSCN) {
+      console.log("AWS China detected.");
+    }
     const architecture = normalizeArchitecture();
     const imageArgs = normalizeImage();
     const cpu = normalizeCpu();
@@ -542,7 +546,7 @@ export class Service extends Component implements Link.Linkable {
                   Service: "ecs-tasks.amazonaws.com",
                 })
               : iam.assumeRolePolicyForPrincipal({
-                  AWS: interpolate`arn:aws:iam::${
+                  AWS: interpolate`arn:${isAWSCN ? "aws-cn" : "aws"}:iam::${
                     getCallerIdentityOutput().accountId
                   }:root`,
                 }),
@@ -563,7 +567,7 @@ export class Service extends Component implements Link.Linkable {
             Service: "ecs-tasks.amazonaws.com",
           }),
           managedPolicyArns: [
-            "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+            isAWSCN ? "arn:aws-cn:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" : "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
           ],
         },
         { parent: self },

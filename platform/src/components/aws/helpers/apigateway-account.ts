@@ -1,4 +1,4 @@
-import { apigateway, iam } from "@pulumi/aws";
+import { apigateway, iam, getRegionOutput } from "@pulumi/aws";
 
 export function setupApiGatewayAccount(namePrefix: string) {
   const account = apigateway.Account.get(
@@ -8,6 +8,12 @@ export function setupApiGatewayAccount(namePrefix: string) {
 
   return account.cloudwatchRoleArn.apply((arn) => {
     if (arn) return account;
+
+    const region = getRegionOutput(undefined, { parent }).name;
+    const isAWSCN = region.apply((region) => region.startsWith("cn-"));
+    if (isAWSCN) {
+      console.log("AWS China detected.");
+    }
 
     const role = new iam.Role(
       `APIGatewayPushToCloudWatchLogsRole`,
@@ -25,7 +31,7 @@ export function setupApiGatewayAccount(namePrefix: string) {
           ],
         }),
         managedPolicyArns: [
-          "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
+          isAWSCN ? "arn:aws-cn:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs" : "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
         ],
       },
       { retainOnDelete: true },
