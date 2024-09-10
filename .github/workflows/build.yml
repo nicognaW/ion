@@ -1,8 +1,8 @@
 name: build
 
 on:
+  workflow_dispatch:
   push:
-    workflow_dispatch:
     branches:
       - dev
 
