@@ -1,10 +1,7 @@
 name: binary
 
 on:
-  push:
-    workflow_dispatch:
-    tags:
-      - "*"
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -22,12 +19,6 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-
-      - run: |
-          npm config set //registry.npmjs.org/:_authToken $NODE_AUTH_TOKEN
-          npm whoami
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: git fetch --force --tags
 
@@ -50,8 +41,3 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.SST_GITHUB_TOKEN }}
-          AUR_KEY: ${{ secrets.AUR_KEY }}
-
-      - run: |
-          cd sdk/js
-          bun run release

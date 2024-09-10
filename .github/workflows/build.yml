@@ -1,10 +1,7 @@
 name: build
 
 on:
-  push:
-    workflow_dispatch:
-    branches:
-      - dev
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -22,12 +19,6 @@ jobs:
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-
-      - run: |
-          npm config set //registry.npmjs.org/:_authToken $NODE_AUTH_TOKEN
-          npm whoami
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: git fetch --force --tags
 
